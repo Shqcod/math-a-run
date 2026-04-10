@@ -1,80 +1,97 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    [Header("Component")]
     [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private Transform GFX;
+    [SerializeField] private Animator anim;
+
+    [Header("Jump Settings")]
     [SerializeField] private float jumpForce = 10f;
-    [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private Transform feetPos;
-    [SerializeField] private float groundDistance = 0.25f;
     [SerializeField] private float jumpTime = 0.3f;
 
-    [SerializeField] private float crouchHeight = 0.5f;
+    [Header("Ground Check")]
+    [SerializeField] private Transform feetPos;
+    [SerializeField] private float groundDistance = 0.25f;
+    [SerializeField] private LayerMask groundLayer;
 
-    // Animation
-    // [SerializeField] private animator anim;
-
-    private bool isGrounded = false;
-    private bool isJumping = false;
+    private bool isGrounded;
+    private bool isJumping;
     private float jumpTimer;
+
+    private void Awake()
+    {
+        // Safety check (biar nggak error)
+        if (rb == null)
+            rb = GetComponent<Rigidbody2D>();
+
+        if (anim == null)
+            anim = GetComponent<Animator>();
+    }
 
     private void Update()
     {
+        // Ground check
         isGrounded = Physics2D.OverlapCircle(feetPos.position, groundDistance, groundLayer);
-        // kirim ke animator
-        // anim.SetBool("isGrounded", isGrounded);
 
-        #region JUMPING
+        // Update Animator
+        anim.SetBool("isGrounded", isGrounded);
+        anim.SetFloat("yVelocity", rb.linearVelocity.y);
+
+        HandleJump();
+        // HandleBetterGravity();
+    }
+
+    private void HandleJump()
+    {
+        // Mulai lompat
         if (isGrounded && Input.GetButtonDown("Jump"))
         {
             isJumping = true;
+            jumpTimer = 0f;
             rb.linearVelocity = Vector2.up * jumpForce;
-
-            // anim.SetTrigger("Jump");
         }
 
+        // Hold jump (biar bisa tinggi rendah)
         if (isJumping && Input.GetButton("Jump"))
         {
             if (jumpTimer < jumpTime)
             {
                 rb.linearVelocity = Vector2.up * jumpForce;
-
                 jumpTimer += Time.deltaTime;
-            } else
+            }
+            else
             {
                 isJumping = false;
             }
         }
 
+        // Lepas tombol
         if (Input.GetButtonUp("Jump"))
         {
             isJumping = false;
-            jumpTimer = 0;
         }
-        #endregion
-
-        #region CROUCHING
-
-        // if (isGrounded && Input.GetButton("Crouch"))
-        // {
-        //     GFX.localScale = new Vector3(GFX.localScale.x, crouchHeight, GFX.localScale.z);
-
-        //     if (isJumping)
-        //        {
-        //            GFX.localScale = new Vector3(GFX.localScale.x, 1f, GFX.localScale.z);
-        //        }
-        // }
-
-        // if (Input.GetButtonUp("Crouch"))
-        // {
-        //     GFX.localScale = new Vector3(GFX.localScale.x , 1f, GFX.localScale.z);
-        // }
-
-        #endregion
     }
 
+    // private void HandleBetterGravity()
+    // {
+    //     // Gravity
+    //     if (rb.linearVelocity.y < 0)
+    //     {
+    //         rb.gravityScale = 3f; // jatuh lebih cepat
+    //     }
+    //     else
+    //     {
+    //         rb.gravityScale = 1f; // naik normal
+    //     }
+    // }
 
-}   
+    private void OnDrawGizmosSelected()
+    {
+        if (feetPos != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(feetPos.position, groundDistance);
+        }
+    }
+}
