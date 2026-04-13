@@ -39,7 +39,6 @@ public class PlayerMovement : MonoBehaviour
         anim.SetFloat("yVelocity", rb.linearVelocity.y);
 
         HandleJump();
-        // HandleBetterGravity();
     }
 
     private void HandleJump()
@@ -72,19 +71,6 @@ public class PlayerMovement : MonoBehaviour
             isJumping = false;
         }
     }
-
-    // private void HandleBetterGravity()
-    // {
-    //     // Gravity
-    //     if (rb.linearVelocity.y < 0)
-    //     {
-    //         rb.gravityScale = 3f; // jatuh lebih cepat
-    //     }
-    //     else
-    //     {
-    //         rb.gravityScale = 1f; // naik normal
-    //     }
-    // }
 
     private void OnDrawGizmosSelected()
     {

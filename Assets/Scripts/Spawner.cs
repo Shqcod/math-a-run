@@ -36,5 +36,7 @@ public class Spawner : MonoBehaviour
 
         Rigidbody2D obstacleRB = spawnedObstacle.GetComponent<Rigidbody2D>();
         obstacleRB.linearVelocity = Vector2.left * obstacleSpeed;
+
+        Destroy(spawnedObstacle, 5f);
     }
 }
