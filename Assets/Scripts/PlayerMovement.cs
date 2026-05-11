@@ -6,22 +6,13 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator anim;
 
-    [Header("Jump Settings")]
-    [SerializeField] private float jumpForce = 10f;
-    [SerializeField] private float jumpTime = 0.3f;
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 5f;
 
-    [Header("Ground Check")]
-    [SerializeField] private Transform feetPos;
-    [SerializeField] private float groundDistance = 0.25f;
-    [SerializeField] private LayerMask groundLayer;
-
-    private bool isGrounded;
-    private bool isJumping;
-    private float jumpTimer;
+    private Vector2 input;
 
     private void Awake()
     {
-        // Safety check (biar nggak error)
         if (rb == null)
             rb = GetComponent<Rigidbody2D>();
 
@@ -31,53 +22,16 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        // Ground check
-        isGrounded = Physics2D.OverlapCircle(feetPos.position, groundDistance, groundLayer);
+        input.x = Input.GetAxis("Horizontal");
+        input.y = Input.GetAxis("Vertical");
 
-        // Update Animator
-        anim.SetBool("isGrounded", isGrounded);
+        anim.SetFloat("xVelocity", rb.linearVelocity.x);
         anim.SetFloat("yVelocity", rb.linearVelocity.y);
-
-        HandleJump();
     }
 
-    private void HandleJump()
+    private void FixedUpdate()
     {
-        // Mulai lompat
-        if (isGrounded && Input.GetButtonDown("Jump"))
-        {
-            isJumping = true;
-            jumpTimer = 0f;
-            rb.linearVelocity = Vector2.up * jumpForce;
-        }
-
-        // Hold jump (biar bisa tinggi rendah)
-        if (isJumping && Input.GetButton("Jump"))
-        {
-            if (jumpTimer < jumpTime)
-            {
-                rb.linearVelocity = Vector2.up * jumpForce;
-                jumpTimer += Time.deltaTime;
-            }
-            else
-            {
-                isJumping = false;
-            }
-        }
-
-        // Lepas tombol
-        if (Input.GetButtonUp("Jump"))
-        {
-            isJumping = false;
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (feetPos != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(feetPos.position, groundDistance);
-        }
+        Vector2 targetPos = rb.position + input * moveSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(targetPos);
     }
 }

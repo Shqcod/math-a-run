@@ -1,16 +1,52 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-
+    [Header("Obstacle")]
     [SerializeField] private GameObject[] obstaclePrefabs;
-    public float obstacleSpawnTime = 2f;
-    public float obstacleSpeed = 1f;
 
-    private float timeUntilObstacleSpawn;
+    [Header("Spawn Timing")]
+    [SerializeField] private float minSpawnTime = 2f;
+
+    [SerializeField] private float maxSpawnTime = 5f;
+
+    [Header("Spawn Amount")]
+    [SerializeField] private int minSpawnAmount = 1;
+
+    [SerializeField] private int maxSpawnAmount = 3;
+
+    [Header("Movement")]
+    [SerializeField] private Vector2 moveDirection = Vector2.left;
+
+    [SerializeField] private float obstacleSpeed = 5f;
+
+    [Header("Spawn Area Type")]
+    [SerializeField] private SpawnType spawnType;
+
+    public bool canSpawn = false;
+
+    private float currentSpawnTime;
+
+    private float timer;
+
+    private BoxCollider2D spawnArea;
+
+    public enum SpawnType
+    {
+        Right,
+        Top,
+        Bottom
+    }
+
+    private void Awake()
+    {
+        spawnArea = GetComponent<BoxCollider2D>();
+    }
+
+    private void Start()
+    {
+        SetRandomSpawnTime();
+    }
 
     private void Update()
     {
@@ -19,24 +55,98 @@ public class Spawner : MonoBehaviour
 
     private void SpawnLoop()
     {
-        timeUntilObstacleSpawn += Time.deltaTime;
-
-        if (timeUntilObstacleSpawn >= obstacleSpawnTime)
+        // Jika spawner OFF
+        if (!canSpawn)
         {
-            Spawn();
-            timeUntilObstacleSpawn = 0f;
+            timer = 0f;
+            return;
+        }
+
+        timer += Time.deltaTime;
+
+        // Waktu spawn tercapai
+        if (timer >= currentSpawnTime)
+        {
+            SpawnMultiple();
+
+            timer = 0f;
+
+            SetRandomSpawnTime();
         }
     }
 
-    private void Spawn()
+    // Dipanggil SpawnManager saat spawner aktif
+    public void ForceSpawn()
     {
-        GameObject obstacleToSpawn = obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
+        SpawnMultiple();
 
-        GameObject spawnedObstacle = Instantiate(obstacleToSpawn, transform.position, Quaternion.identity);
+        timer = 0f;
 
-        Rigidbody2D obstacleRB = spawnedObstacle.GetComponent<Rigidbody2D>();
-        obstacleRB.linearVelocity = Vector2.left * obstacleSpeed;
+        SetRandomSpawnTime();
+    }
 
+    private void SetRandomSpawnTime()
+    {
+        currentSpawnTime =
+            Random.Range(minSpawnTime, maxSpawnTime);
+    }
+
+    private void SpawnMultiple()
+    {
+        int spawnAmount =
+            Random.Range(minSpawnAmount, maxSpawnAmount + 1);
+
+        for (int i = 0; i < spawnAmount; i++)
+        {
+            SpawnSingle();
+        }
+    }
+
+    private void SpawnSingle()
+    {
+        // Random obstacle
+        GameObject obstacleToSpawn =
+            obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
+
+        Bounds bounds = spawnArea.bounds;
+
+        // Random posisi dalam seluruh area collider
+        float randomX =
+            Random.Range(bounds.min.x, bounds.max.x);
+
+        float randomY =
+            Random.Range(bounds.min.y, bounds.max.y);
+
+        Vector2 spawnPos =
+            new Vector2(randomX, randomY);
+
+        // Spawn obstacle
+        GameObject spawnedObstacle =
+            Instantiate(obstacleToSpawn, spawnPos, Quaternion.identity);
+
+        // Gerakkan obstacle
+        Rigidbody2D rb =
+            spawnedObstacle.GetComponent<Rigidbody2D>();
+
+        rb.linearVelocity =
+            moveDirection.normalized * obstacleSpeed;
+
+        // Destroy obstacle
         Destroy(spawnedObstacle, 5f);
+    }
+
+    // Visual area spawn
+    private void OnDrawGizmos()
+    {
+        BoxCollider2D box = GetComponent<BoxCollider2D>();
+
+        if (box == null) return;
+
+        Gizmos.color = Color.red;
+
+        Gizmos.DrawWireCube(
+            box.bounds.center,
+            box.bounds.size
+        );
     }
 }
