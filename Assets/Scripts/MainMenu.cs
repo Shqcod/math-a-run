@@ -5,7 +5,13 @@ public class MainMenu : MonoBehaviour
 {
     public void StartGame()
     {
-        Debug.Log("Tombol Start Ditekan");
-        SceneManager.LoadScene("GameScene");
+        SceneManager.LoadScene(1);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+
+        Debug.Log("Game Closed");
     }
 }
