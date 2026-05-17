@@ -18,9 +18,16 @@ public class QuizEventManager : MonoBehaviour
     [Header("Answer Spawn")]
     [SerializeField] private Transform answerParent;
     [SerializeField] private GameObject answerPrefab;
+    [SerializeField] private float minimumAnswerDistance = 2f;
+    [SerializeField] private Transform player;
+    [SerializeField] private float minimumDistanceFromPlayer = 3f;
 
     [SerializeField] private BoxCollider2D answerSpawnArea;
 
+    [Header("Game Manager")]
+    [SerializeField] private GameManager gameManager;
+
+    public bool EventActive => eventActive;
     private bool eventActive;
 
     private int correctAnswer;
@@ -34,7 +41,7 @@ public class QuizEventManager : MonoBehaviour
 
     IEnumerator EventLoop()
     {
-        while (true)
+        while (!gameManager.IsLevelFinished())
         {
             yield return new WaitForSeconds(eventInterval);
 
@@ -56,6 +63,12 @@ public class QuizEventManager : MonoBehaviour
 
         while (timer > 0)
         {
+            // Jika quiz sudah selesai
+            if (!eventActive)
+            {
+                yield break;
+            }
+
             timer -= Time.deltaTime;
 
             timerText.text =
@@ -66,7 +79,8 @@ public class QuizEventManager : MonoBehaviour
 
         // Waktu habis
         Debug.Log("Waktu Habis");
-
+        gameManager.TakeDamage();
+        gameManager.CompleteQuestion();
         EndEvent();
     }
 
@@ -119,7 +133,7 @@ public class QuizEventManager : MonoBehaviour
             }
         }
 
-        // Acak posisi jawaban
+        // Acak jawaban
         for (int i = 0; i < answers.Count; i++)
         {
             int rnd = Random.Range(0, answers.Count);
@@ -129,14 +143,25 @@ public class QuizEventManager : MonoBehaviour
             answers[rnd] = temp;
         }
 
+        List<Vector2> usedPositions = new List<Vector2>();
+
         foreach (int ans in answers)
         {
-            Vector2 spawnPos = GetRandomPosition();
+            Vector2 spawnPos =
+                GetNonOverlappingPosition(usedPositions);
+
+            usedPositions.Add(spawnPos);
 
             GameObject obj =
-                Instantiate(answerPrefab, spawnPos, Quaternion.identity, answerParent);
+                Instantiate(
+                    answerPrefab,
+                    spawnPos,
+                    Quaternion.identity,
+                    answerParent
+                );
 
-            AnswerObject answerObj = obj.GetComponent<AnswerObject>();
+            AnswerObject answerObj =
+                obj.GetComponent<AnswerObject>();
 
             bool isCorrect = ans == correctAnswer;
 
@@ -154,6 +179,62 @@ public class QuizEventManager : MonoBehaviour
         return new Vector2(randomX, randomY);
     }
 
+    Vector2 GetNonOverlappingPosition(List<Vector2> usedPositions)
+    {
+        Bounds bounds = answerSpawnArea.bounds;
+
+        int attempts = 0;
+
+        while (attempts < 50)
+        {
+            float randomX =
+                Random.Range(bounds.min.x, bounds.max.x);
+
+            float randomY =
+                Random.Range(bounds.min.y, bounds.max.y);
+
+            Vector2 newPos =
+                new Vector2(randomX, randomY);
+
+            bool invalidPosition = false;
+
+            // Cek terlalu dekat dengan jawaban lain
+            foreach (Vector2 pos in usedPositions)
+            {
+                if (Vector2.Distance(newPos, pos)
+                    < minimumAnswerDistance)
+                {
+                    invalidPosition = true;
+                    break;
+                }
+            }
+
+            // Cek terlalu dekat dengan player
+            if (!invalidPosition &&
+                player != null)
+            {
+                if (Vector2.Distance(
+                    newPos,
+                    player.position)
+                    < minimumDistanceFromPlayer)
+                {
+                    invalidPosition = true;
+                }
+            }
+
+            // Posisi valid
+            if (!invalidPosition)
+            {
+                return newPos;
+            }
+
+            attempts++;
+        }
+
+        // fallback
+        return Vector2.zero;
+    }
+
     void ClearAnswers()
     {
         foreach (Transform child in answerParent)
@@ -165,27 +246,24 @@ public class QuizEventManager : MonoBehaviour
     public void CorrectAnswer()
     {
         Debug.Log("Jawaban Benar");
-
-        // Tambah score di sini
-
+        gameManager.AddCorrectScore();
+        gameManager.Heal(1);
+        gameManager.CompleteQuestion();
         EndEvent();
     }
 
     public void WrongAnswer()
     {
         Debug.Log("Jawaban Salah");
-
-        // Kurangi nyawa di sini
-
+        gameManager.TakeDamage();
+        gameManager.CompleteQuestion();
         EndEvent();
     }
 
     void EndEvent()
     {
         eventActive = false;
-
         guruPanel.SetActive(false);
-
         ClearAnswers();
     }
 

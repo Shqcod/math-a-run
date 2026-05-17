@@ -9,16 +9,45 @@ public class SpawnManager : MonoBehaviour
     [SerializeField] private float switchTime = 5f;
 
     private float timer;
-
     private int currentSpawner;
+    private QuizEventManager quizManager;
+    private GameManager gameManager;
 
     private void Start()
     {
+        quizManager =
+            Object.FindFirstObjectByType<QuizEventManager>();
+
+        gameManager =
+            Object.FindFirstObjectByType<GameManager>();
+
         ActivateSpawner(0);
     }
 
     private void Update()
     {
+        // Stop semua spawn jika level selesai
+        if (gameManager != null &&
+            gameManager.IsLevelFinished())
+        {
+            rightSpawner.canSpawn = false;
+            topSpawner.canSpawn = false;
+            bottomSpawner.canSpawn = false;
+
+            return;
+        }
+
+        // Stop spawn manager saat quiz aktif
+        if (quizManager != null &&
+            quizManager.EventActive)
+        {
+            rightSpawner.canSpawn = false;
+            topSpawner.canSpawn = false;
+            bottomSpawner.canSpawn = false;
+
+            return;
+        }
+
         timer += Time.deltaTime;
 
         if (timer >= switchTime)

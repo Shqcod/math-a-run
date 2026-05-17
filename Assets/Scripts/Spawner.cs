@@ -23,6 +23,8 @@ public class Spawner : MonoBehaviour
     [Header("Spawn Area Type")]
     [SerializeField] private SpawnType spawnType;
 
+    [SerializeField] private QuizEventManager quizManager;
+
     public bool canSpawn = false;
 
     private float currentSpawnTime;
@@ -45,6 +47,9 @@ public class Spawner : MonoBehaviour
 
     private void Start()
     {
+        quizManager =
+            Object.FindFirstObjectByType<QuizEventManager>();
+
         SetRandomSpawnTime();
     }
 
@@ -59,6 +64,13 @@ public class Spawner : MonoBehaviour
         if (!canSpawn)
         {
             timer = 0f;
+            return;
+        }
+
+        // Jika quiz sedang aktif
+        if (quizManager != null &&
+            quizManager.EventActive)
+        {
             return;
         }
 
@@ -109,6 +121,12 @@ public class Spawner : MonoBehaviour
             obstaclePrefabs[Random.Range(0, obstaclePrefabs.Length)];
 
         Bounds bounds = spawnArea.bounds;
+
+        if (quizManager != null &&
+            quizManager.EventActive)
+        {
+            return;
+        }
 
         // Random posisi dalam seluruh area collider
         float randomX =

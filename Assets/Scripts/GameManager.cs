@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,6 +13,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Health")]
     public int health = 3;
+    public int maxHealth = 3;
 
     public Image[] hearts;
 
@@ -26,14 +28,23 @@ public class GameManager : MonoBehaviour
     [Header("Player Visual")]
     public SpriteRenderer playerSprite;
 
-    [Header("Game Over")]
-    public GameObject gameOverPanel;
+    [Header("Question Progress")]
+    public int totalQuestions = 10;
+    private int currentQuestion = 0;
+    private int scorePerQuestion;
+    public TextMeshProUGUI questionProgressText;
 
+    [SerializeField] private int currentLevel = 1;
+    private bool levelFinished = false;
     private bool isGameOver = false;
 
     void Start()
     {
-        gameOverPanel.SetActive(false);
+        PlayerPrefs.SetString(
+            "LastPlayedLevel",
+            SceneManager.GetActiveScene().name
+        );
+        scorePerQuestion = Mathf.RoundToInt(100f / totalQuestions);
         UpdateScoreUI();
         UpdateHealthUI();
     }
@@ -42,21 +53,22 @@ public class GameManager : MonoBehaviour
     {
         if (isGameOver)
             return;
-
-        // Tambah score tiap 0.5 detik
-        timer += Time.deltaTime;
-
-        if (timer >= 0.5f)
-        {
-            timer = 0f;
-            score++;
-            UpdateScoreUI();
-        }
     }
 
     void UpdateScoreUI()
     {
         scoreText.text = "Score : " + score;
+    }
+
+    public void AddCorrectScore()
+    {
+        score += scorePerQuestion;
+
+        // Supaya tidak lebih dari 100
+        if (score > 100)
+            score = 100;
+
+        UpdateScoreUI();
     }
 
     public void TakeDamage()
@@ -101,6 +113,16 @@ public class GameManager : MonoBehaviour
         isInvincible = false;
     }
 
+    public void Heal(int amount)
+    {
+        health += amount;
+
+        if (health > maxHealth)
+            health = maxHealth;
+
+        UpdateHealthUI();
+    }
+
     void UpdateHealthUI()
     {
         for (int i = 0; i < hearts.Length; i++)
@@ -116,12 +138,53 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public bool IsLevelFinished()
+    {
+        return levelFinished;
+    }
+
+    void Victory()
+    {
+        levelFinished = true;
+
+        Time.timeScale = 1f;
+
+        PlayerPrefs.SetString(
+            "LastCompletedLevel",
+            SceneManager.GetActiveScene().name
+        );
+
+        if (currentLevel == 1)
+        {
+            PlayerPrefs.SetInt("Level2Unlocked", 1);
+        }
+        else if (currentLevel == 2)
+        {
+            PlayerPrefs.SetInt("Level3Unlocked", 1);
+        }
+
+        SceneManager.LoadScene("VictoryScene");
+    }
+
+    public void CompleteQuestion()
+    {
+        currentQuestion++;
+
+        questionProgressText.text =
+            currentQuestion + " / " + totalQuestions;
+
+        if (currentQuestion >= totalQuestions)
+        {
+            Victory();
+        }
+    }
+
     void GameOver()
     {
         isGameOver = true;
 
-        gameOverPanel.SetActive(true);
+        Time.timeScale = 1f;
 
-        Time.timeScale = 0f;
+        SceneManager.LoadScene("GameOverScene");
     }
 }
