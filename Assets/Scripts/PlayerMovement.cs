@@ -9,6 +9,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
 
+    [Header("Joystick")]
+    [SerializeField] private JoystickController joystick;
+
     private Vector2 input;
 
     private void Awake()
@@ -22,8 +25,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        input.x = Input.GetAxis("Horizontal");
-        input.y = Input.GetAxis("Vertical");
+        input.x = Input.GetAxisRaw("Horizontal") + joystick.Horizontal;
+        input.y = Input.GetAxisRaw("Vertical") + joystick.Vertical;
+
+        input = Vector2.ClampMagnitude(input, 1f);
 
         anim.SetFloat("xVelocity", rb.linearVelocity.x);
         anim.SetFloat("yVelocity", rb.linearVelocity.y);

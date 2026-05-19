@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 6cd50a70bcba429439f8f512a0f41bb9
+guid: 8378ed842e2f8e944ab161ac730c1de9
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -102,7 +102,7 @@ ScriptedImporter:
     generateIndividualEvents: 1
     generateSpriteAtlas: 1
   importFileNodeState: 1
-  platformSettingsDirtyTick: 639147052648780466
+  platformSettingsDirtyTick: 639147358740708134
   textureAssetName: 
   singleSpriteImportData:
   - name: 
@@ -127,9 +127,9 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
   animatedSpriteImportData:
-  - name: bintang kecil dilangit yg biru
+  - name: BubbleTimer
     originalName: 
-    pivot: {x: 0.5849057, y: -0.39534885}
+    pivot: {x: 0.5106383, y: -0.17021276}
     alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     customData: 
@@ -137,9 +137,9 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 53
-      height: 43
-    spriteID: ed1de3f74ee8d9b4386032f35b97aa93
+      width: 47
+      height: 47
+    spriteID: bcf238e076a1421418d0890b11bf9e74
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -153,25 +153,25 @@ ScriptedImporter:
   asepriteLayers:
   - layerIndex: 0
     uuid:
-      value0: 3820152775
+      value0: 2519769961
       value1: 0
       value2: 0
       value3: 0
     guid: 0
-    name: bintang kecil dilangit yg biru
+    name: BubbleTimer
     layerFlags: 0
     layerType: 0
     blendMode: 0
     cells:
-    - name: bintang kecil dilangit yg biru
+    - name: BubbleTimer
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
-        x: 1
-        y: 17
-        width: 53
-        height: 43
-      spriteId: ed1de3f74ee8d9b4386032f35b97aa93
+        x: 8
+        y: 8
+        width: 47
+        height: 47
+      spriteId: bcf238e076a1421418d0890b11bf9e74
     linkedCells: []
     tileCells: []
     tileSetIndex: 0

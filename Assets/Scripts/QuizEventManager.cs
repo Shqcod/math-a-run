@@ -30,6 +30,16 @@ public class QuizEventManager : MonoBehaviour
     public bool EventActive => eventActive;
     private bool eventActive;
 
+    public enum LevelType
+    {
+        Level1,
+        Level2,
+        Level3
+    }
+
+    [Header("Level")]
+    [SerializeField] private LevelType currentLevel;
+
     private int correctAnswer;
 
     void Start()
@@ -86,6 +96,28 @@ public class QuizEventManager : MonoBehaviour
 
     void GenerateQuestion()
     {
+        Debug.Log("Current Level : " + currentLevel);
+
+        switch(currentLevel)
+        {
+            case LevelType.Level1:
+                GenerateLevel1Question();
+                break;
+
+            case LevelType.Level2:
+                GenerateLevel2Question();
+                break;
+
+            case LevelType.Level3:
+                GenerateLevel3Question();
+                break;
+        }
+    }
+
+    void GenerateLevel1Question()
+    {
+        Debug.Log("LEVEL 2 QUESTION");
+
         int a = Random.Range(1, 11);
         int b = Random.Range(1, 11);
 
@@ -96,11 +128,10 @@ public class QuizEventManager : MonoBehaviour
             correctAnswer = a + b;
 
             questionText.text =
-                "Berapa " + a + " + " + b + " ?";
+                a + " + " + b;
         }
         else
         {
-            // Mencegah hasil negatif
             if (a < b)
             {
                 int temp = a;
@@ -111,8 +142,209 @@ public class QuizEventManager : MonoBehaviour
             correctAnswer = a - b;
 
             questionText.text =
-                "Berapa " + a + " - " + b + " ?";
+                a + " - " + b;
         }
+    }
+
+    void GenerateLevel2Question()
+    {
+        int operation = Random.Range(0, 4);
+
+        int a = 0;
+        int b = 0;
+
+        switch(operation)
+        {
+            // PENJUMLAHAN
+            case 0:
+
+                correctAnswer =
+                    Random.Range(1, 51);
+
+                a =
+                    Random.Range(1, correctAnswer);
+
+                b =
+                    correctAnswer - a;
+
+                questionText.text =
+                    a + " + " + b;
+
+                break;
+
+            // PENGURANGAN
+            case 1:
+
+                correctAnswer =
+                    Random.Range(-25, 26);
+
+                b =
+                    Random.Range(1, 26);
+
+                a =
+                    correctAnswer + b;
+
+                questionText.text =
+                    a + " - " + b;
+
+                break;
+
+            // PERKALIAN
+            case 2:
+
+                a = Random.Range(1, 10);
+                b = Random.Range(1, 10);
+
+                correctAnswer = a * b;
+
+                questionText.text =
+                    a + " × " + b;
+
+                break;
+
+            // PEMBAGIAN
+            case 3:
+
+                b = Random.Range(1, 11);
+
+                correctAnswer =
+                    Random.Range(1, 11);
+
+                a = correctAnswer * b;
+
+                // Pastikan ≤ 100
+                while (a > 100)
+                {
+                    b = Random.Range(1, 11);
+
+                    correctAnswer =
+                        Random.Range(1, 11);
+
+                    a = correctAnswer * b;
+                }
+
+                questionText.text =
+                    a + " ÷ " + b;
+
+                break;
+        }
+    }
+
+    void GenerateLevel3Question()
+    {
+        Debug.Log("LEVEL 3 QUESTION");
+
+        bool useMultiply =
+            Random.value > 0.5f;
+
+        bool heavyFirst =
+            Random.value > 0.5f;
+
+        string heavyOp =
+            useMultiply ? "×" : "÷";
+
+        string lightOp =
+            Random.value > 0.5f ? "+" : "-";
+
+        int a = 0;
+        int b = 0;
+        int c = 0;
+
+        int heavyResult = 0;
+
+        // =========================
+        // OPERASI BERAT
+        // =========================
+
+        if (useMultiply)
+        {
+            a = Random.Range(1, 10);
+            b = Random.Range(1, 10);
+
+            heavyResult = a * b;
+        }
+        else
+        {
+            b = Random.Range(1, 11);
+
+            heavyResult =
+                Random.Range(1, 11);
+
+            a = heavyResult * b;
+
+            while (a > 100)
+            {
+                b = Random.Range(1, 11);
+
+                heavyResult =
+                    Random.Range(1, 11);
+
+                a = heavyResult * b;
+            }
+        }
+
+        // =========================
+        // OPERASI RINGAN
+        // =========================
+
+        if (lightOp == "+")
+        {
+            c = Random.Range(1, 51);
+
+            if (heavyFirst)
+            {
+                // (a × b) + c
+                correctAnswer =
+                    heavyResult + c;
+            }
+            else
+            {
+                // c + (a × b)
+                correctAnswer =
+                    c + heavyResult;
+            }
+        }
+        else
+        {
+            c = Random.Range(1, 26);
+
+            if (heavyFirst)
+            {
+                // (a × b) - c
+                correctAnswer =
+                    heavyResult - c;
+            }
+            else
+            {
+                // c - (a × b)
+                correctAnswer =
+                    c - heavyResult;
+            }
+        }
+
+        string expression;
+
+        // =========================
+        // FORMAT SOAL
+        // =========================
+
+        if (heavyFirst)
+        {
+            expression =
+                "(" + a + " " + heavyOp + " " + b + ") "
+                + lightOp + " " + c;
+        }
+        else
+        {
+            expression =
+                c + " " + lightOp + " "
+                + "(" + a + " " + heavyOp + " " + b + ")";
+        }
+
+        questionText.text = expression;
+
+        Debug.Log("Question : " + expression);
+        Debug.Log("Correct Answer : " + correctAnswer);
     }
 
     void SpawnAnswers()
