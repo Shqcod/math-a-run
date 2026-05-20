@@ -1338,7 +1338,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &497246948
 Transform:
   m_ObjectHideFlags: 0
@@ -4025,7 +4025,7 @@ MonoBehaviour:
   emptyHeart: {fileID: 3088774664790242121, guid: 53a1cbd07617c9f4bb200b23b6d4086c, type: 3}
   invincibleDuration: 1
   playerSprite: {fileID: 1214305041}
-  totalQuestions: 5
+  totalQuestions: 15
   questionProgressText: {fileID: 1976794538}
   currentLevel: 3
 --- !u!4 &1368245229
@@ -5700,7 +5700,9 @@ MonoBehaviour:
   minimumAnswerDistance: 2
   player: {fileID: 1214305042}
   minimumDistanceFromPlayer: 3
-  answerSpawnArea: {fileID: 497246949}
+  level1Range: 25
+  level2Range: 20
+  level3Range: 15
   gameManager: {fileID: 1368245228}
   currentLevel: 2
 --- !u!1 &1874518384

@@ -22,7 +22,13 @@ public class QuizEventManager : MonoBehaviour
     [SerializeField] private Transform player;
     [SerializeField] private float minimumDistanceFromPlayer = 3f;
 
-    [SerializeField] private BoxCollider2D answerSpawnArea;
+    // [SerializeField] private BoxCollider2D answerSpawnArea;
+    [Header("Wrong Answer Range")]
+    [SerializeField] private int level1Range = 25;
+
+    [SerializeField] private int level2Range = 20;
+
+    [SerializeField] private int level3Range = 15;
 
     [Header("Game Manager")]
     [SerializeField] private GameManager gameManager;
@@ -112,6 +118,23 @@ public class QuizEventManager : MonoBehaviour
                 GenerateLevel3Question();
                 break;
         }
+    }
+
+    int GetCurrentWrongAnswerRange()
+    {
+        switch (currentLevel)
+        {
+            case LevelType.Level1:
+                return level1Range;
+
+            case LevelType.Level2:
+                return level2Range;
+
+            case LevelType.Level3:
+                return level3Range;
+        }
+
+        return 20;
     }
 
     void GenerateLevel1Question()
@@ -355,11 +378,25 @@ public class QuizEventManager : MonoBehaviour
 
         answers.Add(correctAnswer);
 
+        int wrongRange = GetCurrentWrongAnswerRange();
+
         while (answers.Count < 3)
         {
-            int wrong = Random.Range(1, 11);
+            int minWrong =
+                correctAnswer - wrongRange;
 
-            if (!answers.Contains(wrong))
+            int maxWrong =
+                correctAnswer + wrongRange;
+
+            int wrong =
+                Random.Range(minWrong, maxWrong + 1);
+
+            bool tooClose =
+                Mathf.Abs(wrong - correctAnswer) < 3;
+
+            if (wrong != correctAnswer &&
+                !answers.Contains(wrong) &&
+                !tooClose)
             {
                 answers.Add(wrong);
             }
@@ -403,30 +440,43 @@ public class QuizEventManager : MonoBehaviour
 
     Vector2 GetRandomPosition()
     {
-        Bounds bounds = answerSpawnArea.bounds;
+        Camera cam = Camera.main;
 
-        float randomX = Random.Range(bounds.min.x, bounds.max.x);
-        float randomY = Random.Range(bounds.min.y, bounds.max.y);
+        Vector2 min =
+            cam.ViewportToWorldPoint(
+                new Vector2(0.15f, 0.45f));
+
+        Vector2 max =
+            cam.ViewportToWorldPoint(
+                new Vector2(0.85f, 0.85f));
+
+        float randomX =
+            Random.Range(min.x, max.x);
+
+        float randomY =
+            Random.Range(min.y, max.y);
 
         return new Vector2(randomX, randomY);
     }
 
     Vector2 GetNonOverlappingPosition(List<Vector2> usedPositions)
     {
-        Bounds bounds = answerSpawnArea.bounds;
+        // Bounds bounds = answerSpawnArea.bounds;
 
         int attempts = 0;
 
         while (attempts < 50)
         {
-            float randomX =
-                Random.Range(bounds.min.x, bounds.max.x);
+            // float randomX =
+            //     Random.Range(bounds.min.x, bounds.max.x);
 
-            float randomY =
-                Random.Range(bounds.min.y, bounds.max.y);
+            // float randomY =
+            //     Random.Range(bounds.min.y, bounds.max.y);
 
-            Vector2 newPos =
-                new Vector2(randomX, randomY);
+            // Vector2 newPos =
+            //     new Vector2(randomX, randomY);
+
+            Vector2 newPos = GetRandomPosition();
 
             bool invalidPosition = false;
 
@@ -499,15 +549,15 @@ public class QuizEventManager : MonoBehaviour
         ClearAnswers();
     }
 
-    private void OnDrawGizmos()
-    {
-        if(answerSpawnArea == null) return;
+    // private void OnDrawGizmos()
+    // {
+    //     if(answerSpawnArea == null) return;
 
-        Gizmos.color = Color.green;
+    //     Gizmos.color = Color.green;
 
-        Gizmos.DrawWireCube(
-            answerSpawnArea.bounds.center,
-            answerSpawnArea.bounds.size
-        );
-    }
+    //     Gizmos.DrawWireCube(
+    //         answerSpawnArea.bounds.center,
+    //         answerSpawnArea.bounds.size
+    //     );
+    // }
 }

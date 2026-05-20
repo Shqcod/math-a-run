@@ -19,4 +19,9 @@ public class MainMenu : MonoBehaviour
 
         Debug.Log("Game Closed");
     }
+
+    public void OpenGuide()
+    {
+        SceneManager.LoadScene("GuideScene");
+    }
 }
